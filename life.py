@@ -6,11 +6,15 @@
 import PySimpleGUI as gui
 from PySimpleGUI.PySimpleGUI import WINDOW_CLOSED, Canvas
 
-row1 = [gui.Text("Testing Canvas")]
-row2 = []
+from life_components.life_grid import LifeBoard
+
+lifeboard = LifeBoard([3, 3])
+
+row1 = [gui.Text("Testing Buttons")]
+grid = lifeboard.generate_grid()
 row3 = [gui.Button("Quit")]
 
-layout = [row1, row2, row3]
+layout = [row1, grid, row3]
 
 window = gui.Window("Hello World! GUI",
                     layout,

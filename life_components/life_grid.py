@@ -45,6 +45,9 @@ class LifeNode():
                       mouseover_colors="light blue",
                       pad=1)
 
+    def __repr__(self) -> str:
+        return f"LN position: {self.position}"
+
 
 class LifeBoard():
     """
@@ -64,10 +67,28 @@ class LifeBoard():
                 f"Grid should be a square, the sizes provided are: Length: {grid_size[0]}, Height: {grid_size[1]}"
             )
 
-        self.grid_size = grid_size
+        self.x_axis_length = grid_size[0]
+        self.y_axis_length = grid_size[1]
 
-    def generate_grid_lists(self):
+    def generate_grid(self):
         """
-        Returns a list of lists to build out the life grid.
-        This list should be unpacked before using with PySimpleGUI.
+        Returns a list of LifeNodes with coordinates.
+        Can be used to plug directly into PySimpleGUI.
         """
+
+        self.life_grid = []
+        for row in range(self.x_axis_length):
+            row_list = []
+            for column in range(self.y_axis_length):
+                row_list.append(LifeNode([row, column]).button())
+
+            self.life_grid.append(row_list)
+
+        return self.life_grid
+
+
+# test_board = LifeBoard([3, 3])
+
+# test_grid = test_board.generate_grid()
+
+# print(test_grid)

@@ -1,4 +1,6 @@
+# System Generated files
 .vscode
 venv
+__pycache__/
 
 scratch.py

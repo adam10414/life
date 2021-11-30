@@ -49,12 +49,6 @@ class TestLifeBoard(unittest.TestCase):
     def test_grid_square(self):
         self.assertRaises(ValueError, LifeBoard, [1, 2])
 
-    def test_generate_grid(self):
-        grid = self.lifeboard.generate_grid()
-        self.assertEqual(
-            self.lifeboard.x_axis_length * self.lifeboard.y_axis_length,
-            len(grid))
-
         # TODO:
         # Test that each grid item is a LifeNode
         # Test that each LifeNode has the correct position.

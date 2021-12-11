@@ -137,7 +137,8 @@ class LifeBoard():
     def get_neighbors(self, life_node):
         """
         Returns a list of neighbors on the grid.
-        If a node is on an edge, non-real neighbors will be rejected.
+        If a node is on an edge, non-real neighbors will be
+        returned as None.
         Can only be called after generate_grid().
         """
 

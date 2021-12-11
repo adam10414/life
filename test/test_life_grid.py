@@ -1,6 +1,7 @@
 import unittest
 
 from PySimpleGUI import Button
+import PySimpleGUI
 
 from life_components.life_grid import LifeNode, LifeBoard
 
@@ -16,18 +17,20 @@ class TestLifeNode(unittest.TestCase):
     def test_giveth_life(self):
         self.dead_node.giveth_life()
         self.assertTrue(self.dead_node.alive)
+        self.assertTrue(self.dead_node.color == "white")
 
     def test_taketh_life(self):
         self.alive_node.taketh_life()
         self.assertFalse(self.alive_node.alive)
+        self.assertTrue(self.alive_node.color == "black")
 
     def test_life_node_color(self):
         self.assertTrue(self.alive_node.color == "white")
         self.assertTrue(self.dead_node.color == "black")
 
     def test_life_node_button(self):
-        alive_button = self.alive_node.button()
-        dead_button = self.dead_node.button()
+        alive_button = self.alive_node.button
+        dead_button = self.dead_node.button
 
         self.assertTrue(alive_button.ButtonColor[1] == "white")
         self.assertTrue(dead_button.ButtonColor[1] == "black")
@@ -49,6 +52,10 @@ class TestLifeBoard(unittest.TestCase):
     def test_grid_square(self):
         self.assertRaises(ValueError, LifeBoard, [1, 2])
 
+    def test_life_grid(self):
+        grid = self.lifeboard.generate_grid()
+        for row in grid:
+            print([type(node) for node in grid])
+
         # TODO:
-        # Test that each grid item is a LifeNode
-        # Test that each LifeNode has the correct position.
+        # Test that each grid item is a LifeNode..this is hard for some reason.

@@ -30,23 +30,31 @@ class LifeNode():
         else:
             self.color = "black"
 
+        # The key must be str.
+        # key will be passed to the event loop. This is how we'll know what to update.
+        self.button = Button("",
+                             button_color=self.color,
+                             expand_x=True,
+                             expand_y=True,
+                             mouseover_colors="light blue",
+                             pad=1,
+                             metadata=self.position,
+                             key=f"LN Position: {self.position}")
+
     def giveth_life(self):
         self.alive = True
+        self.color = "white"
 
     def taketh_life(self):
         self.alive = False
-
-    def button(self):
-        """Returns a button representation of this node."""
-        return Button("",
-                      button_color=self.color,
-                      expand_x=True,
-                      expand_y=True,
-                      mouseover_colors="light blue",
-                      pad=1)
+        self.color = "black"
 
     def __repr__(self) -> str:
-        return f"LN position: {self.position}"
+        if self.alive:
+            return f"LN position: {self.position}. Status: alive"
+
+        else:
+            return f"LN position: {self.position}. Status: dead"
 
 
 class LifeBoard():
@@ -76,15 +84,41 @@ class LifeBoard():
         Can be used to plug directly into PySimpleGUI.
         """
 
+        self.life_grid_buttons = []
         self.life_grid = []
         for row in range(self.x_axis_length):
+
             row_list = []
+            button_row_list = []
+
             for column in range(self.y_axis_length):
-                row_list.append(LifeNode([row, column]).button())
+
+                life_node = LifeNode([row, column])
+                row_list.append(life_node)
+                button_row_list.append(life_node.button)
 
             self.life_grid.append(row_list)
+            self.life_grid_buttons.append(button_row_list)
 
-        return self.life_grid
+        return self.life_grid_buttons
+
+    def update_node(self, node_position):
+        """
+        Switches a node between dead or alive.
+        node_position: list [x,y]
+        """
+
+        row = node_position[0]
+        column = node_position[1]
+        life_node = self.life_grid[row][column]
+
+        if life_node.alive:
+            life_node.taketh_life()
+            return life_node
+
+        else:
+            life_node.giveth_life()
+            return life_node
 
 
 # test_board = LifeBoard([3, 3])

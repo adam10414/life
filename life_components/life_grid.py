@@ -100,17 +100,31 @@ class LifeBoard():
             self.life_grid.append(row_list)
             self.life_grid_buttons.append(button_row_list)
 
+            self.number_of_rows = len(self.life_grid)
+            # Since we're working with a square, we can assume the first
+            # element of the life grid will contain the total number of columns.
+            self.number_of_columns = len(self.life_grid[0])
+
         return self.life_grid_buttons
 
-    def update_node(self, node_position):
+    def get_life_node(self, node_position):
         """
-        Switches a node between dead or alive.
-        node_position: list [x,y]
+        Returns the life node at the given postion.
+        node_position: list[row, column]
         """
 
         row = node_position[0]
         column = node_position[1]
-        life_node = self.life_grid[row][column]
+        return self.life_grid[row][column]
+
+    def update_node(self, node_position):
+        """
+        Switches a node between dead or alive.
+        Can only be called after generate_grid().
+        node_position: list [x,y]
+        """
+
+        life_node = self.get_life_node(node_position)
 
         if life_node.alive:
             life_node.taketh_life()
@@ -119,6 +133,64 @@ class LifeBoard():
         else:
             life_node.giveth_life()
             return life_node
+
+    def get_neighbors(self, life_node):
+        """
+        Returns a list of neighbors on the grid.
+        If a node is on an edge, non-real neighbors will be rejected.
+        Can only be called after generate_grid().
+        """
+
+        row = life_node.position[0]
+        column = life_node.position[1]
+
+        def get_north_neighbor():
+            if row - 1 >= 0:
+                return [row - 1, column]
+
+        # columns - 1 because we're working with indicies.
+        def get_east_neighbor():
+            if column + 1 <= self.number_of_columns - 1:
+                return [row, column + 1]
+
+        # rows - 1 because we're working with indicies.
+        def get_south_neighbor():
+            if row + 1 <= self.number_of_rows - 1:
+                return [row + 1, column]
+
+        def get_west_neighbor():
+            if column - 1 >= 0:
+                return [row, column - 1]
+
+        def get_northeast_neighbor():
+            if get_north_neighbor() and get_east_neighbor():
+                return [row - 1, column + 1]
+
+        def get_southeast_neighbor():
+            if get_east_neighbor() and get_south_neighbor():
+                return [row + 1, column + 1]
+
+        def get_southwest_neighbor():
+            if get_south_neighbor() and get_west_neighbor():
+                return [row + 1, column - 1]
+
+        def get_northwest_neighbor():
+            if get_west_neighbor() and get_north_neighbor():
+                return [row - 1, column - 1]
+
+        return [
+            get_north_neighbor(),
+            get_northeast_neighbor(),
+            get_east_neighbor(),
+            get_southeast_neighbor(),
+            get_south_neighbor(),
+            get_southwest_neighbor(),
+            get_west_neighbor(),
+            get_northwest_neighbor()
+        ]
+
+    # def evaluate_life_grid(self):
+    #     """Evalutes the state of each node and it's neighbors."""
 
 
 # test_board = LifeBoard([3, 3])

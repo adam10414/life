@@ -47,6 +47,11 @@ while True:
         window[f"LN Position: {life_node_position}"].update(
             button_color=life_node.color)
 
+        life_node_neighbors = lifeboard.get_neighbors(life_node)
+        print(event)
+        print("")
+        print(life_node_neighbors)
+
 print("Broke out of loop")
 
 window.close()

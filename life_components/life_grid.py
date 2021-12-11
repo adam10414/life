@@ -2,7 +2,9 @@
 This module contains the logic for the life grid.
 """
 
-from PySimpleGUI import Button
+import PySimpleGUI as gui
+
+from life_utils.layout_functions import make_foot
 
 
 class LifeNode():
@@ -32,14 +34,14 @@ class LifeNode():
 
         # The key must be str.
         # key will be passed to the event loop. This is how we'll know what to update.
-        self.button = Button("",
-                             button_color=self.color,
-                             expand_x=True,
-                             expand_y=True,
-                             mouseover_colors="light blue",
-                             pad=1,
-                             metadata=self.position,
-                             key=f"LN Position: {self.position}")
+        self.button = gui.Button("",
+                                 button_color=self.color,
+                                 expand_x=True,
+                                 expand_y=True,
+                                 mouseover_colors="light blue",
+                                 pad=1,
+                                 metadata=self.position,
+                                 key=f"LN Position: {self.position}")
 
     def giveth_life(self):
         self.alive = True
@@ -106,6 +108,43 @@ class LifeBoard():
             self.number_of_columns = len(self.life_grid[0])
 
         return self.life_grid_buttons
+
+    def life_window(self):
+        """
+        A self contained instance of a PySimpleGui window.
+        This method exists to help clean up the main life.py module.
+        """
+
+        life_window = gui.Window("Game of Life",
+                                 layout=[self.generate_grid(),
+                                         make_foot()],
+                                 size=(500, 500))
+
+        while True:
+            life_event, life_values = life_window.read()
+
+            if life_event == gui.WINDOW_CLOSED or life_event == "Quit":
+                break
+
+            # Processing LifeBoard
+            # If a LifeNode button was pressed...
+            if life_event.startswith("LN Position: "):
+
+                # Extract the coordinates of the node.
+                life_node_position = [int(life_event[14]), int(life_event[17])]
+                life_node_row = life_node_position[0]
+                life_node_column = life_node_position[1]
+
+                # Update button color to match node status.
+                life_node = self.update_node(life_node_position)
+                life_window[f"LN Position: {life_node_position}"].update(
+                    button_color=life_node.color)
+
+        # It's possible to hit this point before life_window is initiatlized.
+        try:
+            life_window.close()
+        except NameError:
+            pass
 
     def get_life_node(self, node_position):
         """

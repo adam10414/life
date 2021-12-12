@@ -37,7 +37,7 @@ class LifeNode():
 
         # The key must be str.
         # key will be passed to the event loop. This is how we'll know what to update.
-        self.button = gui.Button(f"{self.position}",
+        self.button = gui.Button(f"",
                                  button_color=self.color,
                                  expand_x=True,
                                  expand_y=True,
@@ -143,20 +143,35 @@ class LifeBoard():
         This method exists to help clean up the main life.py module.
         """
 
-        layout = [[gui.Button("Next Step")],
+        layout = [[gui.Button("Next Step"),
+                   gui.Button("Start/Stop")],
                   self.generate_grid(),
                   make_foot()]  #yapf_ignore
 
         self.window = gui.Window("Game of Life",
                                  layout=layout,
-                                 size=(500, 500))
+                                 size=(1000, 1000))
 
         while True:
             life_event, life_values = self.window.read()
-            print(life_event, life_values)
+            # print(life_event, life_values)
 
             if life_event == gui.WINDOW_CLOSED or life_event == "Quit":
                 break
+
+            if life_event == "Start/Stop":
+                while True:
+                    life_event, life_values = self.window.read(timeout=1)
+                    print(life_event, life_values)
+
+                    self.pre_process_life_nodes()
+                    self.process_iteration()
+
+                    if life_event == gui.WINDOW_CLOSED or life_event == "Quit":
+                        break
+
+                    if life_event == "Start/Stop":
+                        break
 
             if life_event == "Next Step":
                 self.pre_process_life_nodes()

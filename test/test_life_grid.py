@@ -102,5 +102,10 @@ class TestLifeBoard(unittest.TestCase):
             self.lifeboard.get_neighbors(self.center_node),
             [[0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [1, 0], [0, 0]])
 
-        # TODO:
-        # Test that each grid item is a LifeNode..this is hard for some reason.
+    def test_get_life_node(self):
+
+        for x, row in enumerate(self.lifeboard.life_grid):
+            for y, node in enumerate(row):
+                self.assertTrue(
+                    type(self.lifeboard.get_life_node([x, y])) == type(
+                        LifeNode([1, 1])))

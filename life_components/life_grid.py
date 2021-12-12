@@ -1,8 +1,10 @@
 """
 This module contains the logic for the life grid.
 """
+from typing import Counter
 
 import PySimpleGUI as gui
+from PySimpleGUI.PySimpleGUI import Window
 
 from life_utils.layout_functions import make_foot
 
@@ -25,6 +27,7 @@ class LifeNode():
 
         self.position = position
         self.alive = alive
+        self.next_status = None
 
         if self.alive:
             self.color = "white"
@@ -34,7 +37,7 @@ class LifeNode():
 
         # The key must be str.
         # key will be passed to the event loop. This is how we'll know what to update.
-        self.button = gui.Button("",
+        self.button = gui.Button(f"{self.position}",
                                  button_color=self.color,
                                  expand_x=True,
                                  expand_y=True,
@@ -50,6 +53,31 @@ class LifeNode():
     def taketh_life(self):
         self.alive = False
         self.color = "black"
+
+    def iterate(self):
+        """
+        Nodes are acted on in 2 steps. Pre-processing
+        and iterating. Nodes need to be evaluated and
+        acted on in 2 steps to prevent a race condition
+        where a node being modified to alive will afect
+        another node that hasn't been evaluated yet.
+
+        When preprocessing the ndoe's next_status is set.
+        When iterating, this method evaluates next status,
+        and sets the other values of this node appropriately.
+
+        This method will always reset self.next_status back to None.
+        """
+
+        if self.alive and self.next_status == "dead":
+            self.taketh_life()
+            self.next_status = None
+
+        if not self.alive and self.next_status == "alive":
+            self.giveth_life()
+            self.next_status = None
+
+        self.next_status = None
 
     def __repr__(self) -> str:
         if self.alive:
@@ -115,36 +143,106 @@ class LifeBoard():
         This method exists to help clean up the main life.py module.
         """
 
-        life_window = gui.Window("Game of Life",
-                                 layout=[self.generate_grid(),
-                                         make_foot()],
+        layout = [[gui.Button("Next Step")],
+                  self.generate_grid(),
+                  make_foot()]  #yapf_ignore
+
+        self.window = gui.Window("Game of Life",
+                                 layout=layout,
                                  size=(500, 500))
 
         while True:
-            life_event, life_values = life_window.read()
+            life_event, life_values = self.window.read()
+            print(life_event, life_values)
 
             if life_event == gui.WINDOW_CLOSED or life_event == "Quit":
                 break
+
+            if life_event == "Next Step":
+                self.pre_process_life_nodes()
+                self.process_iteration()
 
             # Processing LifeBoard
             # If a LifeNode button was pressed...
             if life_event.startswith("LN Position: "):
 
                 # Extract the coordinates of the node.
-                life_node_position = [int(life_event[14]), int(life_event[17])]
-                life_node_row = life_node_position[0]
-                life_node_column = life_node_position[1]
+                life_node_position = self.calculate_ln_position(life_event)
 
                 # Update button color to match node status.
-                life_node = self.update_node(life_node_position)
-                life_window[f"LN Position: {life_node_position}"].update(
+                life_node = self.node_button_press(life_node_position)
+                self.window[f"LN Position: {life_node_position}"].update(
                     button_color=life_node.color)
 
-        # It's possible to hit this point before life_window is initiatlized.
+        # It's possible to hit this point before self.window is initiatlized.
         try:
-            life_window.close()
+            self.window.close()
         except NameError:
             pass
+
+    def calculate_ln_position(self, window_event):
+        """
+        Since PySimpleGui can only pass strings as event information,
+        we need to parse it.
+        """
+
+        # Button events are emitted as: "LN Position: [5, 19]"
+        #                                pos 14 and 17 ^  ^
+
+        # Finding the opening braket, and going up to the comma.
+        x = int(window_event[window_event.find("[") +
+                             1:window_event.find(",")])
+
+        # Finding the ", " and going up to the closing bracket.
+        y = int(window_event[window_event.find(", ") +
+                             1:window_event.find("]")])
+
+        return [x, y]
+
+    def pre_process_life_nodes(self):
+        """
+        This method will gather the status of all nodes
+        on the board, and determine their life status on
+        the next iteration. Returns a 2-D list of LifeNodes
+        to be processed in the next iteration.
+        """
+
+        for row in self.life_grid:
+            for node in row:
+                neighbors = self.get_neighbors(node)
+                neighbors = [
+                    self.get_life_node(node).alive for node in neighbors
+                    if node != None
+                ]
+                count_of_status = Counter(neighbors)
+                alive_neighbors = count_of_status.get(True)
+                if not alive_neighbors:
+                    alive_neighbors = 0
+
+                # Rules of the game of life.
+                if node.alive and alive_neighbors < 2:
+                    node.next_status = "dead"
+
+                if node.alive and alive_neighbors == 2 or alive_neighbors == 3:
+                    node.next_status = "alive"
+
+                if node.alive and alive_neighbors > 3:
+                    node.next_status = "dead"
+
+                if not node.alive and alive_neighbors == 3:
+                    node.next_status = "alive"
+
+    def process_iteration(self):
+        """
+        Processes changes made in pre_process_life_nodes.
+        This method should probably only be called inside of
+        self.life_window()
+        """
+        for row in self.life_grid:
+            for node in row:
+                node.iterate()
+                self.window[f"LN Position: {node.position}"].update(
+                    button_color=node.color)
 
     def get_life_node(self, node_position):
         """
@@ -156,7 +254,7 @@ class LifeBoard():
         column = node_position[1]
         return self.life_grid[row][column]
 
-    def update_node(self, node_position):
+    def node_button_press(self, node_position):
         """
         Switches a node between dead or alive.
         Can only be called after generate_grid().
@@ -175,7 +273,7 @@ class LifeBoard():
 
     def get_neighbors(self, life_node):
         """
-        Returns a list of neighbors on the grid.
+        Returns a list of neighbor coordinates on the grid.
         If a node is on an edge, non-real neighbors will be
         returned as None.
         Can only be called after generate_grid().
@@ -228,13 +326,3 @@ class LifeBoard():
             get_west_neighbor(),
             get_northwest_neighbor()
         ]
-
-    # def evaluate_life_grid(self):
-    #     """Evalutes the state of each node and it's neighbors."""
-
-
-# test_board = LifeBoard([3, 3])
-
-# test_grid = test_board.generate_grid()
-
-# print(test_grid)

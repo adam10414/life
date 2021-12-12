@@ -25,7 +25,7 @@ This TODO list is not in any particular order.
 - Game runs slower the larger the grid is. Looking at CPU usage, it's maxed out an entire core. 
     - Implement multi-core processing in Python.
 - Add a generation counter.
-- Add a "clear board" button to start from a clean slate.
+- ~~Add a "clear board" button to start from a clean slate.~~
     - Reset generation counter when this button is pressed.
 - Find available monitors:
     - Select largest monitor.
@@ -42,6 +42,10 @@ This TODO list is not in any particular order.
 
 
 ## Notes:
+This implementation has boundaries. Most implementations of this game have an infinite grid. This is both a philosophical choice and also a coding one. During calculations whether the node should be born, stay alive, or die non-real neighbors are discarded rather than evaluating to false.
+
+Thinking on this, real life has boundaries and a limited set of resources (land). Seems appropriate to confine this game to a given starting grid. That being said, if I was not limited by PySimpleGui, I would like to implement an infinitely growing grid based on where live nodes are at any given moment, but that's not possible.
+
 ### Limitations of PySimpleGui
 - Can't redraw the window once it's created. This is why two windows are needed when collecting information and then displaying the game.
 - I suspect the game runs slowly because PySimpleGui consumes a lot of CPU usage to draw the buttons or something. It's either that or Python is just a slow language, and this is one of it's drawbacks.

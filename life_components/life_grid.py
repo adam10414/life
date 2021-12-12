@@ -143,10 +143,13 @@ class LifeBoard():
         This method exists to help clean up the main life.py module.
         """
 
-        layout = [[gui.Button("Next Step"),
-                   gui.Button("Start/Stop")],
+        next_step = gui.Button("Next Step")
+        start_stop = gui.Button("Start/Stop")
+        clear_board = gui.Button("Clear Board")
+
+        layout = [[next_step, start_stop, clear_board],
                   self.generate_grid(),
-                  make_foot()]  #yapf_ignore
+                  make_foot()]
 
         self.window = gui.Window("Game of Life",
                                  layout=layout,
@@ -158,6 +161,9 @@ class LifeBoard():
 
             if life_event == gui.WINDOW_CLOSED or life_event == "Quit":
                 break
+
+            if life_event == "Clear Board":
+                self.clear_board()
 
             if life_event == "Start/Stop":
                 while True:
@@ -186,14 +192,32 @@ class LifeBoard():
 
                 # Update button color to match node status.
                 life_node = self.node_button_press(life_node_position)
-                self.window[f"LN Position: {life_node_position}"].update(
-                    button_color=life_node.color)
+                self.update_node_button(life_node)
 
         # It's possible to hit this point before self.window is initiatlized.
         try:
             self.window.close()
         except NameError:
             pass
+
+    def update_node_button(self, life_node):
+        """
+        Updates the button color.
+        Must be run after self.window()
+        """
+        self.window[f"LN Position: {life_node.position}"].update(
+            button_color=life_node.color)
+
+    def clear_board(self):
+        """
+        Kills all life nodes on the grid.
+        Must be run after self.generate_grid()
+        """
+
+        for row in self.life_grid:
+            for node in row:
+                node.taketh_life()
+                self.update_node_button(node)
 
     def calculate_ln_position(self, window_event):
         """

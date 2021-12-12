@@ -1,4 +1,4 @@
-import unittest
+import unittest, random
 
 from PySimpleGUI import Button
 import PySimpleGUI
@@ -45,7 +45,7 @@ class TestLifeNode(unittest.TestCase):
 class TestLifeBoard(unittest.TestCase):
     def setUp(self):
         self.lifeboard = LifeBoard([3, 3])
-        grid = self.lifeboard.generate_grid()
+        self.lifeboard.generate_grid()
 
         # Abbreviations are cardinal directions.
         # n = North, ne = North-East, etc...
@@ -58,6 +58,10 @@ class TestLifeBoard(unittest.TestCase):
         self.south_side_node = LifeNode([2, 1])
         self.west_side_node = LifeNode([1, 0])
         self.center_node = LifeNode([1, 1])
+
+        random_life_status = []
+        for row in range(3):
+            random_life_status.append([random.randint(0, 1) for _ in range(3)])
 
     def test_grid_size_type(self):
         self.assertRaises(TypeError, LifeBoard, (1, 1))
@@ -109,3 +113,40 @@ class TestLifeBoard(unittest.TestCase):
                 self.assertTrue(
                     type(self.lifeboard.get_life_node([x, y])) == type(
                         LifeNode([1, 1])))
+
+    def test_get_life_node(self):
+        for row in range(3):
+            for node in range(3):
+                rand_position = [random.randint(0, 2) for _ in range(2)]
+                test_node = self.lifeboard.get_life_node(rand_position)
+
+                self.assertEqual(rand_position, test_node.position)
+
+    def test_node_button_press(self):
+        for row in self.lifeboard.life_grid:
+            for node in row:
+                before_status = node.alive
+                after_status = self.lifeboard.node_button_press(node.position)
+                self.assertFalse(before_status == after_status)
+
+    def test_calculate_node_position(self):
+        single_digit_coordinates = "LN Position: [5, 1]"
+        double_digit_coordinates = "LN Position: [51, 12]"
+        tripple_digit_coordinates = "LN Position: [512, 123]"
+
+        self.assertEqual(
+            [5, 1],
+            self.lifeboard.calculate_ln_position(single_digit_coordinates))
+        self.assertEqual(
+            [51, 12],
+            self.lifeboard.calculate_ln_position(double_digit_coordinates))
+        self.assertEqual(
+            [512, 123],
+            self.lifeboard.calculate_ln_position(tripple_digit_coordinates))
+
+    # def test_update_node_button(self):
+    #     for row in self.lifeboard.life_grid_buttons:
+    #         for button in row:
+    #             node = self.lif
+    #             before_color = button.ButtonColor[1]
+    #             after_color = self.lifeboard.update_node_button()

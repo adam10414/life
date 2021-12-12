@@ -11,7 +11,7 @@ I saw this game in a Veritasium video and I thought this would be a fun project 
 - Type: `python3 life.py` and press enter.
 
 ## How to use:
-The first window to appear will be the window to collect information about how large you want the grid to be. Type in a number and press Submit.
+The first window to appear will be the window to collect information about how large you want the grid to be. Type in a number and press Submit. Recommended grid size is anywhere form 20-30
 
 The next window to appear will contain the grid with the individual life nodes. All nodes start out as dead. You can toggle them alive by clicking on them. Note: You can only toggle nodes while the simulation is stopped.
 

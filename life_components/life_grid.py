@@ -137,7 +137,8 @@ class LifeBoard():
 
         return self.life_grid_buttons
 
-    def life_window(self):
+    # Not sure if this should just be in a seperate module, or if it's okay to keep it here.
+    def life_window(self, production_flag=True):
         """
         A self contained instance of a PySimpleGui window.
         This method exists to help clean up the main life.py module.
@@ -156,8 +157,16 @@ class LifeBoard():
                                  size=(1000, 1000))
 
         while True:
-            life_event, life_values = self.window.read()
-            # print(life_event, life_values)
+
+            if production_flag:
+                life_event, life_values = self.window.read()
+                # print(life_event, life_values)
+
+            # In a test enviornment, do not wait and allow the program to continue.
+            else:
+                life_event, life_values = None, {}
+                self.window.read(timeout=1)
+                self.window.close()
 
             if life_event == gui.WINDOW_CLOSED or life_event == "Quit":
                 break
@@ -203,7 +212,7 @@ class LifeBoard():
     def update_node_button(self, life_node):
         """
         Updates the button color.
-        Must be run after self.window()
+        Must be run after self.window().
         """
         self.window[f"LN Position: {life_node.position}"].update(
             button_color=life_node.color)
@@ -222,7 +231,8 @@ class LifeBoard():
     def calculate_ln_position(self, window_event):
         """
         Since PySimpleGui can only pass strings as event information,
-        we need to parse it.
+        we need to parse it. This function calculates the life node
+        position based on the event emitted by pressing the button.
         """
 
         # Button events are emitted as: "LN Position: [5, 19]"

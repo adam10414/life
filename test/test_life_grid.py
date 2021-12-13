@@ -47,6 +47,9 @@ class TestLifeBoard(unittest.TestCase):
         self.lifeboard = LifeBoard([3, 3])
         self.lifeboard.generate_grid()
 
+        # Heads up, this will open a window during testing.
+        self.lifeboard.life_window(production_flag=False)
+
         # Abbreviations are cardinal directions.
         # n = North, ne = North-East, etc...
         self.nw_corner_node = LifeNode([0, 0])
@@ -62,6 +65,9 @@ class TestLifeBoard(unittest.TestCase):
         random_life_status = []
         for row in range(3):
             random_life_status.append([random.randint(0, 1) for _ in range(3)])
+
+    def tearDown(self) -> None:
+        self.lifeboard.window.close()
 
     def test_grid_size_type(self):
         self.assertRaises(TypeError, LifeBoard, (1, 1))
@@ -144,9 +150,20 @@ class TestLifeBoard(unittest.TestCase):
             [512, 123],
             self.lifeboard.calculate_ln_position(tripple_digit_coordinates))
 
-    # def test_update_node_button(self):
-    #     for row in self.lifeboard.life_grid_buttons:
-    #         for button in row:
-    #             node = self.lif
-    #             before_color = button.ButtonColor[1]
-    #             after_color = self.lifeboard.update_node_button()
+    def test_update_node_button(self):
+        for row in self.lifeboard.life_grid_buttons:
+            for button in row:
+                node_position = self.lifeboard.calculate_ln_position(
+                    button.Key)
+                node = self.lifeboard.get_life_node(node_position)
+                before_color_button = button.ButtonColor[1]
+                before_color_node = node.color
+
+                self.lifeboard.node_button_press(node_position)
+                self.lifeboard.update_node_button(node)
+                after_color_button = button.ButtonColor[1]
+                after_color_node = node.color
+
+                self.assertNotEqual(before_color_button, after_color_button)
+                self.assertEqual(before_color_button, before_color_node)
+                self.assertEqual(after_color_button, after_color_node)
